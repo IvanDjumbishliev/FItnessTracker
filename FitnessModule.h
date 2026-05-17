@@ -3,6 +3,7 @@
 
 #include <chrono>
 #include <memory>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -80,10 +81,31 @@ namespace fitness
         virtual double calculateCalories() = 0;
     };
 
+    class Set
+    {
+    private:
+        int setNumber;
+        int reps;
+        double weightKg;
+        bool isWarmup;
+
+    public:
+        Set(int setNumber, int reps, double weightKg, bool isWarmup);
+
+        int getSetNumber() const noexcept;
+        int getReps() const noexcept;
+        double getWeightKg() const noexcept;
+        bool getIsWarmup() const noexcept;
+
+        void setReps(int reps);
+        void setWeightKg(double weightKg);
+    };
+
     class StrengthExercise : public Exercise
     {
     private:
         std::string equipment;
+        std::vector<Set> sets;
 
     public:
         StrengthExercise(std::string name,
@@ -91,6 +113,7 @@ namespace fitness
                          std::string equipment);
 
         const std::string &getEquipment() const noexcept;
+        void addSet(const Set &s);
         double calculateCalories() override;
     };
 

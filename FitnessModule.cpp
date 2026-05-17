@@ -190,7 +190,53 @@ namespace fitness
     {
         return category;
     }
+    Set::Set(int setNumber, int reps, double weightKg, bool isWarmup)
+        : setNumber(setNumber),
+          reps(0),
+          weightKg(0.0),
+          isWarmup(isWarmup)
+    {
+        setReps(reps);
+        setWeightKg(weightKg);
+    }
 
+    int Set::getSetNumber() const noexcept
+    {
+        return setNumber;
+    }
+
+    int Set::getReps() const noexcept
+    {
+        return reps;
+    }
+
+    double Set::getWeightKg() const noexcept
+    {
+        return weightKg;
+    }
+
+    bool Set::getIsWarmup() const noexcept
+    {
+        return isWarmup;
+    }
+
+    void Set::setReps(int reps)
+    {
+        if (reps <= 0)
+        {
+            throw std::invalid_argument("reps must be greater than 0");
+        }
+        this->reps = reps;
+    }
+
+    void Set::setWeightKg(double weightKg)
+    {
+        if (weightKg <= 0.0)
+        {
+            throw std::invalid_argument("weightKg must be greater than 0");
+        }
+        this->weightKg = weightKg;
+    }
     StrengthExercise::StrengthExercise(std::string name,
                                        MuscleGroup muscleGroup,
                                        std::string equipment)
@@ -202,6 +248,11 @@ namespace fitness
     const std::string &StrengthExercise::getEquipment() const noexcept
     {
         return equipment;
+    }
+
+    void StrengthExercise::addSet(const Set &s)
+    {
+        sets.push_back(s);
     }
 
     double StrengthExercise::calculateCalories()
