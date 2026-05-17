@@ -117,4 +117,48 @@ namespace fitness
         this->goal = goal;
     }
 
+    std::shared_ptr<WorkoutSession> User::createWorkout(const std::string &name,
+                                                        int durationMin,
+                                                        const std::string &notes)
+    {
+        auto session = std::make_shared<WorkoutSession>(name,
+                                                        std::chrono::system_clock::now(),
+                                                        durationMin,
+                                                        notes);
+        sessions.push_back(session);
+        return session;
+    }
+
+    WorkoutSession::WorkoutSession(std::string name,
+                                   std::chrono::system_clock::time_point date,
+                                   int durationMin,
+                                   std::string notes)
+        : BaseEntity(),
+          name(std::move(name)),
+          date(date),
+          durationMin(durationMin),
+          notes(std::move(notes))
+    {
+    }
+
+    const std::string &WorkoutSession::getName() const noexcept
+    {
+        return name;
+    }
+
+    const std::chrono::system_clock::time_point &WorkoutSession::getDate() const noexcept
+    {
+        return date;
+    }
+
+    int WorkoutSession::getDurationMin() const noexcept
+    {
+        return durationMin;
+    }
+
+    const std::string &WorkoutSession::getNotes() const noexcept
+    {
+        return notes;
+    }
+
 } // namespace fitness

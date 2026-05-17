@@ -2,7 +2,9 @@
 #define FITNESS_MODULE_H
 
 #include <chrono>
+#include <memory>
 #include <string>
+#include <vector>
 
 namespace fitness
 {
@@ -39,6 +41,8 @@ namespace fitness
         HIGH
     };
 
+    class WorkoutSession;
+
     class BaseEntity
     {
     protected:
@@ -52,6 +56,26 @@ namespace fitness
 
         const std::string &getId() const noexcept;
         const std::chrono::system_clock::time_point &getCreatedAt() const noexcept;
+    };
+
+    class WorkoutSession : public BaseEntity
+    {
+    private:
+        std::string name;
+        std::chrono::system_clock::time_point date;
+        int durationMin;
+        std::string notes;
+
+    public:
+        WorkoutSession(std::string name,
+                       std::chrono::system_clock::time_point date,
+                       int durationMin,
+                       std::string notes);
+
+        const std::string &getName() const noexcept;
+        const std::chrono::system_clock::time_point &getDate() const noexcept;
+        int getDurationMin() const noexcept;
+        const std::string &getNotes() const noexcept;
     };
 
     class User : public BaseEntity
@@ -84,6 +108,13 @@ namespace fitness
 
         GoalType getGoal() const noexcept;
         void setGoal(GoalType goal);
+
+        std::shared_ptr<WorkoutSession> createWorkout(const std::string &name,
+                                                      int durationMin,
+                                                      const std::string &notes);
+
+    private:
+        std::vector<std::shared_ptr<WorkoutSession>> sessions;
     };
 
 } // namespace fitness
