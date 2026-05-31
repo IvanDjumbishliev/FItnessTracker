@@ -3,6 +3,10 @@
 #include "WeeklySummary.h"
 
 #include <algorithm>
+#include <ctime>
+#include <fstream>
+#include <iomanip>
+#include <sstream>
 #include <stdexcept>
 
 namespace fitness
@@ -190,6 +194,168 @@ namespace fitness
 
         auto previousSummary = std::make_shared<WeeklySummary>(previousStart, previousEnd, std::move(previousWeekSessions));
         return WeeklySummary(start, end, std::move(currentWeekSessions), std::move(previousSummary));
+    }
+
+    namespace
+    {
+        std::string escapeCsv(const std::string &value)
+        {
+            std::string result;
+            bool needsQuotes = false;
+            result.reserve(value.size());
+
+            for (char ch : value)
+            {
+                if (ch == '"')
+                {
+                    result += "\"\"";
+                    needsQuotes = true;
+                }
+                else
+                {
+                    if (ch == ',' || ch == '\n' || ch == '\r')
+                    {
+                        needsQuotes = true;
+                    }
+                    result.push_back(ch);
+                }
+            }
+
+            if (needsQuotes)
+            {
+                return '"' + result + '"';
+            }
+            return result;
+        }
+
+        std::string formatTimePoint(const std::chrono::system_clock::time_point &timePoint)
+        {
+            const std::time_t tt = std::chrono::system_clock::to_time_t(timePoint);
+            std::tm tm;
+#if defined(_WIN32)
+            localtime_s(&tm, &tt);
+#else
+            localtime_r(&tt, &tm);
+#endif
+            std::ostringstream oss;
+            oss << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
+            return oss.str();
+        }
+
+        const char *muscleGroupToString(MuscleGroup muscleGroup)
+        {
+            switch (muscleGroup)
+            {
+            case MuscleGroup::LEGS:
+                return "LEGS";
+            case MuscleGroup::CHEST:
+                return "CHEST";
+            case MuscleGroup::BACK:
+                return "BACK";
+            case MuscleGroup::SHOULDERS:
+                return "SHOULDERS";
+            case MuscleGroup::ARMS:
+                return "ARMS";
+            case MuscleGroup::CORE:
+                return "CORE";
+            }
+            return "UNKNOWN";
+        }
+
+        const char *exerciseCategoryToString(ExerciseCategory category)
+        {
+            switch (category)
+            {
+            case ExerciseCategory::STRENGTH:
+                return "STRENGTH";
+            case ExerciseCategory::CARDIO:
+                return "CARDIO";
+            case ExerciseCategory::STRETCHING:
+                return "STRETCHING";
+            }
+            return "UNKNOWN";
+        }
+    } // namespace
+
+    bool User::exportWorkoutHistory(const std::string &filename) const
+    {
+        std::ofstream file(filename);
+        if (!file.is_open())
+        {
+            return false;
+        }
+
+        file << "userId,username,email,sessionId,sessionName,sessionDate,durationMin,notes,exerciseName,category,muscleGroup,equipment,setNumber,reps,weightKg,isWarmup,calories\n";
+
+        for (const auto &session : sessions)
+        {
+            if (!session)
+            {
+                continue;
+            }
+
+            const auto sessionDate = formatTimePoint(session->getDate());
+            const std::string sessionName = escapeCsv(session->getName());
+            const std::string sessionNotes = escapeCsv(session->getNotes());
+
+            for (const auto &exercise : session->getExercises())
+            {
+                if (!exercise)
+                {
+                    continue;
+                }
+
+                const auto exerciseName = escapeCsv(exercise->getName());
+                const auto category = exerciseCategoryToString(exercise->getCategory());
+                const auto muscleGroup = muscleGroupToString(exercise->getMuscleGroup());
+                const auto calories = exercise->calculateCalories();
+
+                if (auto strength = std::dynamic_pointer_cast<StrengthExercise>(exercise))
+                {
+                    for (const auto &set : strength->getSets())
+                    {
+                        file << escapeCsv(getId()) << ','
+                             << escapeCsv(getUsername()) << ','
+                             << escapeCsv(getEmail()) << ','
+                             << escapeCsv(session->getId()) << ','
+                             << sessionName << ','
+                             << sessionDate << ','
+                             << session->getDurationMin() << ','
+                             << sessionNotes << ','
+                             << exerciseName << ','
+                             << category << ','
+                             << muscleGroup << ','
+                             << escapeCsv(strength->getEquipment()) << ','
+                             << set.getSetNumber() << ','
+                             << set.getReps() << ','
+                             << set.getWeightKg() << ','
+                             << (set.getIsWarmup() ? "true" : "false") << ','
+                             << calories << '\n';
+                    }
+                }
+                else
+                {
+                    file << escapeCsv(getId()) << ','
+                         << escapeCsv(getUsername()) << ','
+                         << escapeCsv(getEmail()) << ','
+                         << escapeCsv(session->getId()) << ','
+                         << sessionName << ','
+                         << sessionDate << ','
+                         << session->getDurationMin() << ','
+                         << sessionNotes << ','
+                         << exerciseName << ','
+                         << category << ','
+                         << muscleGroup << ','
+                         << ','
+                         << ','
+                         << ','
+                         << ','
+                         << calories << '\n';
+                }
+            }
+        }
+
+        return file.good();
     }
 
 } // namespace fitness

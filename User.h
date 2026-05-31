@@ -53,6 +53,7 @@ namespace fitness
         const std::vector<PersonalRecord> &getPersonalRecords() const noexcept;
         void completeWorkout(const std::shared_ptr<WorkoutSession> &session);
         WeeklySummary getWeeklySummary() const;
+        bool exportWorkoutHistory(const std::string &filename) const;
 
     private:
         std::vector<PersonalRecord> prs;
