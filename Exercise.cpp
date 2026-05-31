@@ -96,6 +96,11 @@ namespace fitness
         sets.push_back(s);
     }
 
+    const std::vector<Set> &StrengthExercise::getSets() const noexcept
+    {
+        return sets;
+    }
+
     double StrengthExercise::calculateCalories()
     {
         return 75.0;

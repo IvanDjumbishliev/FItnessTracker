@@ -40,4 +40,9 @@ namespace fitness
         exercises.push_back(std::move(e));
     }
 
+    const std::vector<std::shared_ptr<Exercise>> &WorkoutSession::getExercises() const noexcept
+    {
+        return exercises;
+    }
+
 } // namespace fitness

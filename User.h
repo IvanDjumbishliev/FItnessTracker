@@ -3,6 +3,7 @@
 
 #include "BaseEntity.h"
 #include "FitnessTypes.h"
+#include "PersonalRecord.h"
 
 #include <memory>
 #include <string>
@@ -47,6 +48,12 @@ namespace fitness
         std::shared_ptr<WorkoutSession> createWorkout(const std::string &name,
                                                       int durationMin,
                                                       const std::string &notes);
+
+        const std::vector<PersonalRecord> &getPersonalRecords() const noexcept;
+        void completeWorkout(const std::shared_ptr<WorkoutSession> &session);
+
+    private:
+        std::vector<PersonalRecord> prs;
     };
 }
 

@@ -1,6 +1,7 @@
 #include "User.h"
 #include "WorkoutSession.h"
 
+#include <algorithm>
 #include <stdexcept>
 
 namespace fitness
@@ -90,6 +91,55 @@ namespace fitness
                                                         notes);
         sessions.push_back(session);
         return session;
+    }
+
+    const std::vector<PersonalRecord> &User::getPersonalRecords() const noexcept
+    {
+        return prs;
+    }
+
+    void User::completeWorkout(const std::shared_ptr<WorkoutSession> &session)
+    {
+        if (!session)
+        {
+            return;
+        }
+
+        for (const auto &exercise : session->getExercises())
+        {
+            auto strengthExercise = std::dynamic_pointer_cast<StrengthExercise>(exercise);
+            if (!strengthExercise)
+            {
+                continue;
+            }
+
+            double maxWeight = 0.0;
+            for (const auto &set : strengthExercise->getSets())
+            {
+                if (!set.getIsWarmup() && set.getWeightKg() > maxWeight)
+                {
+                    maxWeight = set.getWeightKg();
+                }
+            }
+
+            if (maxWeight <= 0.0)
+            {
+                continue;
+            }
+
+            auto existing = std::find_if(prs.begin(), prs.end(), [&](const PersonalRecord &record)
+                                         { return record.getExercise() && record.getExercise()->getName() == strengthExercise->getName() && record.getUnit() == "kg"; });
+
+            PersonalRecord newRecord(strengthExercise, maxWeight, "kg", std::chrono::system_clock::now());
+            if (existing == prs.end())
+            {
+                prs.push_back(std::move(newRecord));
+            }
+            else if (existing->isBeatenBy(newRecord))
+            {
+                *existing = std::move(newRecord);
+            }
+        }
     }
 
 } // namespace fitness

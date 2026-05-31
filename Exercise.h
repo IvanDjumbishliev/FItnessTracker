@@ -64,6 +64,7 @@ namespace fitness
 
         const std::string &getEquipment() const noexcept;
         void addSet(const Set &s);
+        const std::vector<Set> &getSets() const noexcept;
         double calculateCalories() override;
     };
 

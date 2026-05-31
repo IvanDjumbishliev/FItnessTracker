@@ -33,6 +33,7 @@ namespace fitness
         const std::string &getNotes() const noexcept;
 
         void addExercise(std::shared_ptr<Exercise> e);
+        const std::vector<std::shared_ptr<Exercise>> &getExercises() const noexcept;
     };
 }
 
