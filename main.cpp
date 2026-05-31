@@ -22,6 +22,54 @@ int main()
         workout->addExercise(exercise);
         std::cout << "Exercise added to workout.\n";
 
+        auto &catalog = fitness::ExerciseCatalog::getInstance();
+        auto muscleGroupToString = [](fitness::MuscleGroup mg) -> const char *
+        {
+            switch (mg)
+            {
+            case fitness::MuscleGroup::LEGS:
+                return "Legs";
+            case fitness::MuscleGroup::CHEST:
+                return "Chest";
+            case fitness::MuscleGroup::BACK:
+                return "Back";
+            case fitness::MuscleGroup::SHOULDERS:
+                return "Shoulders";
+            case fitness::MuscleGroup::ARMS:
+                return "Arms";
+            case fitness::MuscleGroup::CORE:
+                return "Core";
+            }
+            return "Unknown";
+        };
+
+        auto categoryToString = [](fitness::ExerciseCategory category) -> const char *
+        {
+            switch (category)
+            {
+            case fitness::ExerciseCategory::STRENGTH:
+                return "Strength";
+            case fitness::ExerciseCategory::CARDIO:
+                return "Cardio";
+            case fitness::ExerciseCategory::STRETCHING:
+                return "Stretching";
+            }
+            return "Unknown";
+        };
+
+        std::cout << "\nExercise catalog search by muscle group (LEGS):\n";
+        for (const auto &candidate : catalog.getByMuscleGroup(fitness::MuscleGroup::LEGS))
+        {
+            std::cout << "- " << candidate->getName() << " [" << muscleGroupToString(candidate->getMuscleGroup()) << "] [" << categoryToString(candidate->getCategory()) << "]\n";
+        }
+
+        std::cout << "\nExercise catalog search by category (CARDIO):\n";
+        for (const auto &candidate : catalog.getByCategory(fitness::ExerciseCategory::CARDIO))
+        {
+            std::cout << "- " << candidate->getName() << " [" << muscleGroupToString(candidate->getMuscleGroup()) << "] [" << categoryToString(candidate->getCategory()) << "]\n";
+        }
+
+        std::cout << "\n";
         std::cout << "Attempting invalid set creation...\n";
         try
         {
