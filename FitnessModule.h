@@ -4,6 +4,7 @@
 #include "FitnessTypes.h"
 #include "BaseEntity.h"
 #include "Exercise.h"
+#include "ExerciseCatalog.h"
 #include "WorkoutSession.h"
 #include "User.h"
 
