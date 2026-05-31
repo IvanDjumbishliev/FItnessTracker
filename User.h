@@ -4,6 +4,7 @@
 #include "BaseEntity.h"
 #include "FitnessTypes.h"
 #include "PersonalRecord.h"
+#include "WeeklySummary.h"
 
 #include <memory>
 #include <string>
@@ -51,6 +52,7 @@ namespace fitness
 
         const std::vector<PersonalRecord> &getPersonalRecords() const noexcept;
         void completeWorkout(const std::shared_ptr<WorkoutSession> &session);
+        WeeklySummary getWeeklySummary() const;
 
     private:
         std::vector<PersonalRecord> prs;

@@ -104,4 +104,21 @@ namespace fitness
         return totalVolume;
     }
 
+    double WeeklySummary::getProgressVsPrevious() const noexcept
+    {
+        if (!previousSummary)
+        {
+            return 0.0;
+        }
+
+        double previousVolume = previousSummary->getTotalVolume();
+        if (previousVolume <= 0.0)
+        {
+            return 0.0;
+        }
+
+        double currentVolume = getTotalVolume();
+        return (currentVolume - previousVolume) / previousVolume * 100.0;
+    }
+
 } // namespace fitness

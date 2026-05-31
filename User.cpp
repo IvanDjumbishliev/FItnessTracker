@@ -1,5 +1,6 @@
 #include "User.h"
 #include "WorkoutSession.h"
+#include "WeeklySummary.h"
 
 #include <algorithm>
 #include <stdexcept>
@@ -140,6 +141,55 @@ namespace fitness
                 *existing = std::move(newRecord);
             }
         }
+    }
+
+    WeeklySummary User::getWeeklySummary() const
+    {
+        using namespace std::chrono;
+
+        auto end = system_clock::now();
+        if (!sessions.empty())
+        {
+            auto latest = std::max_element(sessions.begin(), sessions.end(), [](const auto &lhs, const auto &rhs)
+                                           {
+                                               if (!lhs || !rhs)
+                                               {
+                                                   return rhs != nullptr;
+                                               }
+                                               return lhs->getDate() < rhs->getDate(); });
+            if (latest != sessions.end() && *latest)
+            {
+                end = (*latest)->getDate();
+            }
+        }
+
+        auto start = end - hours(24 * 7);
+        auto previousStart = start - hours(24 * 7);
+        auto previousEnd = start;
+
+        std::vector<std::shared_ptr<WorkoutSession>> currentWeekSessions;
+        std::vector<std::shared_ptr<WorkoutSession>> previousWeekSessions;
+
+        for (const auto &session : sessions)
+        {
+            if (!session)
+            {
+                continue;
+            }
+
+            const auto &date = session->getDate();
+            if (date >= start && date <= end)
+            {
+                currentWeekSessions.push_back(session);
+            }
+            else if (date >= previousStart && date < previousEnd)
+            {
+                previousWeekSessions.push_back(session);
+            }
+        }
+
+        auto previousSummary = std::make_shared<WeeklySummary>(previousStart, previousEnd, std::move(previousWeekSessions));
+        return WeeklySummary(start, end, std::move(currentWeekSessions), std::move(previousSummary));
     }
 
 } // namespace fitness

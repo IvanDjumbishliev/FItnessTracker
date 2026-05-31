@@ -25,6 +25,7 @@ namespace fitness
         std::size_t getTotalWorkouts() const noexcept;
         double getTotalCalories() const noexcept;
         double getTotalVolume() const noexcept;
+        double getProgressVsPrevious() const noexcept;
 
     private:
         std::chrono::system_clock::time_point startDate;
