@@ -1,4 +1,5 @@
 #include "WorkoutSession.h"
+#include <stdexcept>
 
 namespace fitness
 {
@@ -13,6 +14,14 @@ namespace fitness
           durationMin(durationMin),
           notes(std::move(notes))
     {
+        if (this->name.empty())
+        {
+            throw std::invalid_argument("WorkoutSession name must not be empty");
+        }
+        if (durationMin <= 0)
+        {
+            throw std::invalid_argument("durationMin must be greater than 0");
+        }
     }
 
     const std::string &WorkoutSession::getName() const noexcept

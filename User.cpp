@@ -279,40 +279,64 @@ namespace fitness
 
     bool User::exportWorkoutHistory(const std::string &filename) const
     {
-        std::ofstream file(filename);
-        if (!file.is_open())
+        try
         {
-            return false;
-        }
-
-        file << "userId,username,email,sessionId,sessionName,sessionDate,durationMin,notes,exerciseName,category,muscleGroup,equipment,setNumber,reps,weightKg,isWarmup,calories\n";
-
-        for (const auto &session : sessions)
-        {
-            if (!session)
+            std::ofstream file(filename);
+            file.exceptions(std::ofstream::failbit | std::ofstream::badbit);
+            if (!file.is_open())
             {
-                continue;
+                return false;
             }
 
-            const auto sessionDate = formatTimePoint(session->getDate());
-            const std::string sessionName = escapeCsv(session->getName());
-            const std::string sessionNotes = escapeCsv(session->getNotes());
+            file << "userId,username,email,sessionId,sessionName,sessionDate,durationMin,notes,exerciseName,category,muscleGroup,equipment,setNumber,reps,weightKg,isWarmup,calories\n";
 
-            for (const auto &exercise : session->getExercises())
+            for (const auto &session : sessions)
             {
-                if (!exercise)
+                if (!session)
                 {
                     continue;
                 }
 
-                const auto exerciseName = escapeCsv(exercise->getName());
-                const auto category = exerciseCategoryToString(exercise->getCategory());
-                const auto muscleGroup = muscleGroupToString(exercise->getMuscleGroup());
-                const auto calories = exercise->calculateCalories();
+                const auto sessionDate = formatTimePoint(session->getDate());
+                const std::string sessionName = escapeCsv(session->getName());
+                const std::string sessionNotes = escapeCsv(session->getNotes());
 
-                if (auto strength = std::dynamic_pointer_cast<StrengthExercise>(exercise))
+                for (const auto &exercise : session->getExercises())
                 {
-                    for (const auto &set : strength->getSets())
+                    if (!exercise)
+                    {
+                        continue;
+                    }
+
+                    const auto exerciseName = escapeCsv(exercise->getName());
+                    const auto category = exerciseCategoryToString(exercise->getCategory());
+                    const auto muscleGroup = muscleGroupToString(exercise->getMuscleGroup());
+                    const auto calories = exercise->calculateCalories();
+
+                    if (auto strength = std::dynamic_pointer_cast<StrengthExercise>(exercise))
+                    {
+                        for (const auto &set : strength->getSets())
+                        {
+                            file << escapeCsv(getId()) << ','
+                                 << escapeCsv(getUsername()) << ','
+                                 << escapeCsv(getEmail()) << ','
+                                 << escapeCsv(session->getId()) << ','
+                                 << sessionName << ','
+                                 << sessionDate << ','
+                                 << session->getDurationMin() << ','
+                                 << sessionNotes << ','
+                                 << exerciseName << ','
+                                 << category << ','
+                                 << muscleGroup << ','
+                                 << escapeCsv(strength->getEquipment()) << ','
+                                 << set.getSetNumber() << ','
+                                 << set.getReps() << ','
+                                 << set.getWeightKg() << ','
+                                 << (set.getIsWarmup() ? "true" : "false") << ','
+                                 << calories << '\n';
+                        }
+                    }
+                    else
                     {
                         file << escapeCsv(getId()) << ','
                              << escapeCsv(getUsername()) << ','
@@ -325,37 +349,25 @@ namespace fitness
                              << exerciseName << ','
                              << category << ','
                              << muscleGroup << ','
-                             << escapeCsv(strength->getEquipment()) << ','
-                             << set.getSetNumber() << ','
-                             << set.getReps() << ','
-                             << set.getWeightKg() << ','
-                             << (set.getIsWarmup() ? "true" : "false") << ','
+                             << ','
+                             << ','
+                             << ','
+                             << ','
                              << calories << '\n';
                     }
                 }
-                else
-                {
-                    file << escapeCsv(getId()) << ','
-                         << escapeCsv(getUsername()) << ','
-                         << escapeCsv(getEmail()) << ','
-                         << escapeCsv(session->getId()) << ','
-                         << sessionName << ','
-                         << sessionDate << ','
-                         << session->getDurationMin() << ','
-                         << sessionNotes << ','
-                         << exerciseName << ','
-                         << category << ','
-                         << muscleGroup << ','
-                         << ','
-                         << ','
-                         << ','
-                         << ','
-                         << calories << '\n';
-                }
             }
-        }
 
-        return file.good();
+            return file.good();
+        }
+        catch (const std::ios_base::failure &)
+        {
+            return false;
+        }
+        catch (const std::exception &)
+        {
+            return false;
+        }
     }
 
 } // namespace fitness
